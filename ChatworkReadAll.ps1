@@ -4,8 +4,6 @@
 
 param(
     [switch]$Settings,
-    [switch]$InstallStartup,
-    [switch]$UninstallStartup,
     [switch]$SelfTest
 )
 
@@ -15,21 +13,11 @@ $Script:AppName = 'Chatwork Read All'
 $Script:ApiBaseUrl = 'https://api.chatwork.com/v2'
 $Script:ConfigDir = Join-Path $env:APPDATA 'ChatworkReadAll'
 $Script:ConfigPath = Join-Path $Script:ConfigDir 'config.json'
-$Script:StartupShortcutName = 'Chatwork Read All.lnk'
 $Script:ChatworkToken = $null
 $Script:RateLimitRemaining = $null
 $Script:RateLimitResetEpoch = $null
 $Script:RequestCount = 0
 $Script:GuiInitialized = $false
-
-function Get-CurrentScriptPath {
-    # Returns the script path used by the startup shortcut.
-    if (-not [string]::IsNullOrWhiteSpace($PSCommandPath)) {
-        return $PSCommandPath
-    }
-
-    return $MyInvocation.MyCommand.Path
-}
 
 function Get-UnixTimeSeconds {
     # PowerShell 5.1 compatibility wrapper for Unix epoch seconds.
@@ -101,44 +89,6 @@ function Initialize-Gui {
     Add-Type -AssemblyName System.Drawing
     [System.Windows.Forms.Application]::EnableVisualStyles()
     $Script:GuiInitialized = $true
-}
-
-function Get-StartupShortcutPath {
-    # Resolves the current user's Startup folder shortcut path.
-    $startupFolder = [Environment]::GetFolderPath('Startup')
-    return Join-Path $startupFolder $Script:StartupShortcutName
-}
-
-function Install-StartupShortcut {
-    # Registers this script to run at Windows sign-in for the current user.
-    $scriptPath = Get-CurrentScriptPath
-    if ([string]::IsNullOrWhiteSpace($scriptPath) -or -not (Test-Path -LiteralPath $scriptPath)) {
-        throw 'Script path could not be resolved.'
-    }
-
-    $shortcutPath = Get-StartupShortcutPath
-    $shell = New-Object -ComObject WScript.Shell
-    $shortcut = $shell.CreateShortcut($shortcutPath)
-    $shortcut.TargetPath = Join-Path $PSHOME 'powershell.exe'
-    $shortcut.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$scriptPath`""
-    $shortcut.WorkingDirectory = Split-Path -Parent $scriptPath
-    $shortcut.IconLocation = Join-Path $PSHOME 'powershell.exe'
-    $shortcut.WindowStyle = 1
-    $shortcut.Save()
-
-    Write-Host "Startup shortcut installed: $shortcutPath"
-}
-
-function Uninstall-StartupShortcut {
-    # Removes the current user's startup shortcut.
-    $shortcutPath = Get-StartupShortcutPath
-    if (Test-Path -LiteralPath $shortcutPath) {
-        Remove-Item -LiteralPath $shortcutPath
-        Write-Host "Startup shortcut removed: $shortcutPath"
-        return
-    }
-
-    Write-Host "Startup shortcut was not found: $shortcutPath"
 }
 
 function Get-HeaderValue {
@@ -710,7 +660,7 @@ function Show-ResultDialog {
 }
 
 function Start-InteractiveApp {
-    # Main startup flow: settings if needed, confirmation, then read-all execution.
+    # Main manual-run flow: settings if needed, confirmation, then read-all execution.
     Initialize-Gui
 
     try {
@@ -816,25 +766,11 @@ function Invoke-SelfTest {
         throw 'Integer property conversion failed.'
     }
 
-    if ([string]::IsNullOrWhiteSpace((Get-StartupShortcutPath))) {
-        throw 'Startup shortcut path resolution failed.'
-    }
-
     Write-Host 'SelfTest OK'
 }
 
 if ($SelfTest) {
     Invoke-SelfTest
-    return
-}
-
-if ($InstallStartup) {
-    Install-StartupShortcut
-    return
-}
-
-if ($UninstallStartup) {
-    Uninstall-StartupShortcut
     return
 }
 

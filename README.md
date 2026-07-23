@@ -1,6 +1,6 @@
 # Chatwork Read All
 
-Chatworkの未読チャットを、Windows起動時の確認ダイアログから一括既読にする小さなアプリです。
+Chatworkの未読チャットを、任意のタイミングで起動して一括既読にする小さなWindowsアプリです。
 
 自分以外のユーザーが多数のグループチャットに同じ案内を送信した場合など、読む必要のない大量未読をまとめて処理する目的で使います。
 
@@ -8,7 +8,7 @@ Chatworkの未読チャットを、Windows起動時の確認ダイアログか�
 
 [最新版ZIPをダウンロード](https://github.com/yoshinsk/chatwork_read_all/archive/refs/heads/main.zip)
 
-ZIPを展開して、展開先フォルダ内の `ChatworkReadAll.cmd` を実行してください。
+ZIPを展開して、展開先フォルダ内の `ChatworkReadAll.cmd` を実行してください。実行した時だけ確認ダイアログが表示されます。
 
 ## 動作環境
 
@@ -23,7 +23,7 @@ ZIPを展開して、展開先フォルダ内の `ChatworkReadAll.cmd` を実行
 ## できること
 
 - Chatwork APIキーを現在のWindowsユーザー用に暗号化して保存します。
-- Windows起動時に「すべて既読にしますか？」と確認します。
+- `ChatworkReadAll.cmd` を実行した時に「すべて既読にしますか？」と確認します。
 - `Yes` を選ぶと、未読があるチャットを最新メッセージまで既読にします。
 - `No` を選ぶと、何も変更せず終了します。
 - 実行前の確認画面で、未読ルーム数、未読メッセージ数、自分宛て未読数を表示します。
@@ -37,23 +37,13 @@ ZIPを展開して、展開先フォルダ内の `ChatworkReadAll.cmd` を実行
 
 APIキーは `%APPDATA%\ChatworkReadAll\config.json` に保存されます。保存値はWindows DPAPIで現在のWindowsユーザー向けに暗号化され、平文では保存されません。
 
-## Windows起動時に表示する
-
-次のコマンドを実行すると、現在のWindowsユーザーのスタートアップに登録されます。
-
-`Install-Startup.cmd` を実行してください。
-
-登録後、次回Windowsサインイン時に確認ダイアログが表示されます。
-
-## スタートアップ登録を解除する
-
-`Uninstall-Startup.cmd` を実行してください。
-
-## 手動実行
+## 実行方法
 
 ```cmd
 ChatworkReadAll.cmd
 ```
+
+このアプリはWindows起動時には自動実行しません。既読化したいタイミングで `ChatworkReadAll.cmd` を実行してください。
 
 設定画面を再度開く場合:
 
@@ -91,6 +81,7 @@ Chatwork APIには、全チャットを一度に既読にする専用エンド�
 
 - 既読化は、自分のアカウントの未読状態だけを変更します。他ユーザーの既読状態は変更できません。
 - 自分宛て未読や重要な未読も既読になります。
+- Windows起動時の自動実行や常駐は行いません。
 - APIキーは第三者に渡さないでください。Chatwork公式ドキュメントでも、APIキーをHTTPヘッダーで送信し、第三者へ開示しないよう案内されています。
 - Chatwork APIの利用回数制限に達した場合、APIが返すリセット時刻に従って待機します。
 - 403が返る場合、APIトークンのスコープまたは対象チャットへの権限が不足しています。
